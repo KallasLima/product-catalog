@@ -46,7 +46,7 @@ React + TypeScript on Vite, with an intentionally small Express backend. The old
 - `server/app.js`: HTTP validation and CRUD routes.
 - `server/store.js`: serialized file mutations and atomic replacement before acknowledging a write.
 
-Search is local because the demo collection is small. Initial loads are cancellable, transport failures have a retry path, and the client reports failed saves inside the active form. Delete needs explicit confirmation. The illustrations are original category symbols rather than product photography.
+Search is local because the demo collection is small. Initial loads are cancellable, transport failures have a retry path, and the client reports failed saves inside the active form. Delete needs explicit confirmation. The interface uses an editorial objects-catalog direction: a serif identity, open image/type layouts, underlined categories and focused red-orange actions. Six bundled illustrative product photographs were generated for the fictional seed collection and encoded as WebP. New or renamed records without a matching demo photograph show an explicit no-image state. These images are illustrative assets, not photographs of real inventory. Fonts are bundled locally; the app does not request third-party font or image services.
 
 ## API
 
@@ -84,4 +84,4 @@ npm audit
 
 The HTTP integration test covers validation, free products, create/update/delete, search, persistence after reopening the store, malformed JSON and concurrent writes. Browser validation covers real forms, confirmation/cancellation, reload, service failure/retry and a narrow viewport.
 
-All demo content and illustrations are original. Third-party packages retain their licenses. A distribution license for this project has not been selected.
+Demo content is fictional. The six product images are AI-generated illustrative assets prepared for this edition. DM Sans and DM Serif Display are distributed under the SIL Open Font License; their notices are retained. Third-party packages retain their licenses. A distribution license for this project has not been selected.

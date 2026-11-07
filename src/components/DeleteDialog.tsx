@@ -13,7 +13,14 @@ export function DeleteDialog({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   useEffect(() => {
-    dialog.current?.showModal();
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const element = dialog.current;
+    element?.showModal();
+    return () => {
+      element?.close();
+      if (opener?.isConnected) opener.focus();
+      else document.querySelector<HTMLButtonElement>('.add-product')?.focus();
+    };
   }, []);
   return (
     <dialog

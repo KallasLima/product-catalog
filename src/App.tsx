@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { api, money } from './api';
+import { api } from './api';
+import { ProductCard } from './components/ProductCard';
+import { PlusIcon, SearchIcon } from './components/Icons';
 import type { Product, Draft } from './models';
 import { ProductForm } from './components/ProductForm';
 import { DeleteDialog } from './components/DeleteDialog';
@@ -43,58 +45,86 @@ export default function App() {
     );
     setNotice(editing ? 'Product updated.' : 'Product added.');
   }
+  const categories = ['All', 'Stationery', 'Home', 'Accessories', 'Other'];
   return (
     <main>
-      <header>
-        <a href="/" className="brand">
-          <span className="brand-mark">▦</span> Shelf{' '}
-          <span className="brand-sub">PRODUCT CATALOG</span>
+      <header className="app-header">
+        <a href="/" className="brand" aria-label="Shelf home">
+          Shelf.
         </a>
-        <span className="local-label">Local workspace</span>
-      </header>
-      <section className="intro">
-        <div>
-          <p className="eyebrow">A PLACE FOR THE DETAILS</p>
-          <h1>Good things, organized.</h1>
-          <p className="muted">
-            Keep a small collection of products clear, current and easy to find.
-          </p>
+        <div className="workspace-label">
+          <span>Product workspace</span>
+          <small>Saved locally</small>
         </div>
-        <button onClick={() => setEditing(null)}>＋ Add product</button>
+      </header>
+      <section className="intro" aria-labelledby="collection-title">
+        <div>
+          <h1 id="collection-title">Your collection.</h1>
+          <p>Browse, organize and keep the details current.</p>
+        </div>
+        <button className="add-product" onClick={() => setEditing(null)}>
+          <PlusIcon />
+          Add product
+        </button>
       </section>
-      <section className="catalog">
+      <section className="catalog" aria-label="Product catalog">
         <div className="catalog-toolbar">
-          <div className="tabs" aria-label="Categories">
-            {['All', 'Stationery', 'Home', 'Accessories', 'Other'].map((x) => (
+          <div className="tabs" role="group" aria-label="Categories">
+            {categories.map((x) => (
               <button
                 key={x}
                 className={x === category ? 'active' : ''}
+                aria-label={x}
                 aria-pressed={x === category}
-                onClick={() => setCategory(x)}
+                onClick={() => {
+                  setCategory(x);
+                  setNotice('');
+                }}
               >
-                {x}
+                {x}{' '}
+                <span className="category-count">
+                  {items.filter((p) => x === 'All' || p.category === x).length}
+                </span>
               </button>
             ))}
           </div>
           <label className="search">
+            <SearchIcon />
             <span className="sr-only">Search products</span>
             <input
               type="search"
-              placeholder="Search your collection"
+              placeholder="Search products"
               maxLength={100}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setNotice('');
+              }}
             />
           </label>
         </div>
-        <div role="status" className="status">
-          {notice ||
-            (!loading && !error
+        <div className="catalog-meta">
+          <p aria-live="polite">
+            {!loading && !error
               ? `${visible.length} ${visible.length === 1 ? 'product' : 'products'} · Prices in USD`
-              : '')}
+              : loading
+                ? 'Loading the collection…'
+                : 'Catalog unavailable'}
+          </p>
+          <p role="status" className="notice">
+            {notice}
+          </p>
         </div>
         {loading ? (
-          <div className="empty">Loading the collection…</div>
+          <div className="loading-grid" aria-label="Loading products" aria-busy="true">
+            {[0, 1, 2].map((i) => (
+              <div key={i}>
+                <span />
+                <span />
+                <span />
+              </div>
+            ))}
+          </div>
         ) : error ? (
           <div className="empty">
             <h2>We couldn’t load the catalog.</h2>
@@ -104,69 +134,12 @@ export default function App() {
         ) : visible.length ? (
           <div className="products">
             {visible.map((p) => (
-              <article className="product" key={p.id}>
-                <div className={'illustration ' + p.category.toLowerCase()} aria-hidden="true">
-                  <svg viewBox="0 0 240 160">
-                    <ellipse cx="120" cy="134" rx="66" ry="8" fill="currentColor" opacity=".08" />
-                    {p.category === 'Stationery' ? (
-                      <>
-                        <path d="M78 26h85v104H78z" fill="currentColor" opacity=".75" />
-                        <path
-                          d="M88 26v104M105 52h38M105 63h29"
-                          stroke="#fff"
-                          strokeWidth="3"
-                          opacity=".7"
-                        />
-                      </>
-                    ) : p.category === 'Home' ? (
-                      <>
-                        <path d="M75 58h78v44c0 42-78 42-78 0z" fill="currentColor" opacity=".75" />
-                        <path
-                          d="M153 67c46-10 44 49 0 40"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="9"
-                          opacity=".75"
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <path d="M73 55h94l-8 77H81z" fill="currentColor" opacity=".75" />
-                        <path
-                          d="M98 60V43c0-31 44-31 44 0v17"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="6"
-                        />
-                      </>
-                    )}
-                  </svg>
-                  <span>{p.category}</span>
-                </div>
-                <div className="product-body">
-                  <div className="product-heading">
-                    <h2>{p.name}</h2>
-                    <strong>{money(p.price)}</strong>
-                  </div>
-                  <p>{p.description}</p>
-                  <div className="product-actions">
-                    <button
-                      className="text-button"
-                      onClick={() => setEditing(p)}
-                      aria-label={'Edit ' + p.name}
-                    >
-                      Edit details ↗
-                    </button>
-                    <button
-                      className="text-button delete"
-                      onClick={() => setDeleting(p)}
-                      aria-label={'Delete ' + p.name}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </article>
+              <ProductCard
+                key={p.id}
+                product={p}
+                onEdit={() => setEditing(p)}
+                onDelete={() => setDeleting(p)}
+              />
             ))}
           </div>
         ) : (
@@ -175,7 +148,7 @@ export default function App() {
             <p>
               {items.length
                 ? 'Try another search or category.'
-                : 'Add a product to give it a home.'}
+                : 'Add your first product to start the collection.'}
             </p>
             <button
               className="secondary"
@@ -190,10 +163,7 @@ export default function App() {
           </div>
         )}
       </section>
-      <footer>
-        <span>SHELF / A SMALL PRODUCT WORKSPACE</span>
-        <span>Changes are saved to this local server.</span>
-      </footer>
+      <footer>Changes are saved to this local server.</footer>
       {editing !== undefined && (
         <ProductForm product={editing} onSave={save} onClose={() => setEditing(undefined)} />
       )}{' '}

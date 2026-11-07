@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { CloseIcon } from './Icons';
 import type { Product, Draft } from '../models';
 export function ProductForm({
   product,
@@ -11,7 +12,8 @@ export function ProductForm({
   onClose: () => void;
 }) {
   const id = useId(),
-    dialog = useRef<HTMLDialogElement>(null);
+    dialog = useRef<HTMLDialogElement>(null),
+    nameInput = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(product?.name ?? ''),
     [description, setDescription] = useState(product?.description ?? ''),
     [category, setCategory] = useState(product?.category ?? 'Other'),
@@ -19,7 +21,15 @@ export function ProductForm({
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
   useEffect(() => {
-    dialog.current?.showModal();
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const element = dialog.current;
+    element?.showModal();
+    nameInput.current?.focus();
+    return () => {
+      element?.close();
+      if (opener?.isConnected) opener.focus();
+      else document.querySelector<HTMLButtonElement>('.add-product')?.focus();
+    };
   }, []);
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -64,14 +74,14 @@ export function ProductForm({
             disabled={busy}
             onClick={onClose}
           >
-            ×
+            <CloseIcon />
           </button>
         </div>
-        <p className="muted">A few details, one useful record.</p>
+        <p className="muted">Update the details in your collection.</p>
         <label>
           Name
           <input
-            autoFocus
+            ref={nameInput}
             required
             maxLength={120}
             value={name}
